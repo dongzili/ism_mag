@@ -1,0 +1,45 @@
+storage path:
+	ssh dzli@peccary
+	/mnt/scratch-lustre/pen/VLBI/
+
+frequency:
+	00: 310.5-318.5 MHz
+	01: 318.5-326.5 MHz
+	02: 326.5-334.5 MHz
+	04: 334.5-342.5 MHz
+
+baseline: 
+	257
+	258
+	514
+	?unit?
+
+type:
+	dynamic spectrum
+
+telescope parameter:
+	?
+	Dual frequency S- and X-band front end receivers with concentric LCP feeds for simultaneous S- and X-band observations. L-band capability
+
+Gate: 0-6
+	0 best
+	4 off pulse
+	6 0 1 2 on pulse
+	3 5 off pulse but not clean enough
+DATA:
+	Gate1: gb057_1.input_baseline257_freq_03_pol_all.rebint	
+	frequency sample: 16384
+	time: 1321	
+	unit?
+
+	Gate0: gb057_1.input_baseline257_freq_03_pol_LL.bin.all
+	freq: 16384
+	time: 2120
+
+	Gate0: gb057_1.input_baseline257_freq_00_pol_LL.rebint
+	freq : 16384
+	time : 1321
+
+	Gate0: gb057_1.input_baseline257_freq_00_pol_LL.rebint
+	freq : 16384
+	time : 1321
