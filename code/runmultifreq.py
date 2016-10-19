@@ -1,8 +1,8 @@
-task = 6
+task = 5
 plotphase=0
-mask_lowI = 0.0
-vrange = 4.0
-filenumber = 5
+mask_lowI = 0
+vrange = 1e-3
+filenumber = 3
 
 figure_path='/home/dzli/ism/figures/'
 # 0 plot secondary specs from dy_spec 
@@ -12,7 +12,7 @@ figure_path='/home/dzli/ism/figures/'
 # 4 calculate phase0 and phase0_LL-RR
 # 5 plot phase difference
 	#plotphase = 1 also plot phase RR, phase LL
-# 6 check LL+RR and LL-RR
+
 
 # 1 auto goes to 2; 
 # 4 auto goes to 5
@@ -104,28 +104,15 @@ if task == 5:
 		mask = mask + '_vrange'+str(vrange)
 #plot phase LL minus RR
 	pdf = pgs.PdfPages(figure_path+'phase_LLminusRR'+mask+'_'+str(filenumber)+'.pdf')
-		
-	# set a filter, only consider phasel+phaser(ideally = 0) < vrange
-	phasel = psi.readphase0(name = namel,mask_lowI=mask_lowI)
-	phaser = psi.readphase0(name = namer,mask_lowI=mask_lowI)
-	check = abs(phasel + phaser)
-	renorm = check > np.pi
-	check[renorm]-=2.0*np.pi
-	del renorm
-	del phasel,phaser	
-
 	for i in xrange(0,filenumber):
-		filter_indices = check < vrange	
-		print np.count_nonzero(filter_indices)
-		phase = psi.readphase0(name = namel,phase_type = 'diff',mask_lowI=mask_lowI)
-		phase[np.logical_not(filter_indices)]=0.0
-		del filter_indices
-
+	#	namell = namel.replace('freq_00','freq_0'+str(i))
+		namell = namel
+		vrange *=10
+		phase = psi.readphase0(name = namell,phase_type = 'diff',mask_lowI=mask_lowI)
 		name = namel.replace('freq_00_pol_LL','freq_0'+str(i)+'LLminusRR')
-		name = namel.replace('pol_LL','vrange'+str(vrange))
+		name = namel.replace('pol_LL','LLminusRR')
 		psi.plot_phase(phase,pdf,name=name,vrange = vrange)
 		del phase
-		vrange *=10
 	pdf.close()
 
 	if plotphase == 1:
@@ -146,38 +133,3 @@ if task == 5:
 			del phase
 		pdf.close()
 
-if task == 6:
-	import phase as psi
-
-	mask = ''
-	if mask_lowI !=0:
-		mask = '_mask'+str(mask_lowI)
-	if vrange != 0:
-		mask = mask + '_vrange'+str(vrange)
-#plot phase LL minus RR
-	pdf = pgs.PdfPages(figure_path+'phase_LLminusRR'+mask+'_'+str(filenumber)+'.pdf')
-		
-	# set a filter, only consider phasel+phaser(ideally = 0) < vrange
-	phasel = psi.readphase0(name = namel,mask_lowI=mask_lowI)
-	phaser = psi.readphase0(name = namer,mask_lowI=mask_lowI)
-	check_ful = phasel - phaser
-	del phasel,phaser	
-	renorm = check_ful>np.pi
-	check_ful[renorm]-=2.0*np.pi
-	renorm = check_ful<-np.pi
-	check_ful[renorm]+=2.0*np.pi
-	del renorm
-
-	for i in xrange(0,filenumber):
-		check = check_ful
-		filter_indices = abs(check) < vrange	
-		print np.count_nonzero(filter_indices)
-		check[np.logical_not(filter_indices)]=0.0
-		del filter_indices
-
-		name = namel.replace('pol_LL','vrange'+str(vrange))
-		psi.plot_phase(check,pdf,name=name,vrange = vrange)
-		del check
-		vrange /=10
-	pdf.close()
-	del check_ful

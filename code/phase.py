@@ -52,14 +52,21 @@ def plot_phase (phase,pdf,name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebi
 		vrange = np.pi
 #	import math
 #	phase*=180.0*3600.0/math.pi #transform into arcsec
+#to make sure delta psi is in the range of -pi to pi
+	if 1==0:
+		renorm = phase > np.pi
+		phase[renorm]-=2.0*np.pi
+		renorm = phase < -np.pi
+		phase[renorm]+=2.0*np.pi
+		del renorm
 
 # mask data points with abnormal large delta psi
-	mask_indices = abs(phase) > vrange
-	phase[mask_indices] = 0.0
+#	mask_indices = abs(phase) > vrange
+#	phase[mask_indices] = 0.0
 #	phase[np.logical_not(mask_indices)] = -100	
 
 	plt.figure(1)
-	plt.imshow(phase, origin='lower',interpolation='none',aspect='auto',cmap='seismic',vmin=-vrange,vmax=vrange)
+	plt.imshow(phase, origin='lower',interpolation='none',aspect='auto',cmap='seismic')
 	plt.xlim(300,1000)
 	plt.ylim(5000,12000)
 	plt.title(name)
