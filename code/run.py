@@ -1,8 +1,8 @@
-task = 6
+task = 7
 plotphase=0
 mask_lowI = 0.0
 vrange = 4.0
-filenumber = 5
+filenumber = 1
 
 figure_path='/home/dzli/ism/figures/'
 # 0 plot secondary specs from dy_spec 
@@ -13,6 +13,7 @@ figure_path='/home/dzli/ism/figures/'
 # 5 plot phase difference
 	#plotphase = 1 also plot phase RR, phase LL
 # 6 check LL+RR and LL-RR
+# 7 check LL+RR and LL-RR in log plot
 
 # 1 auto goes to 2; 
 # 4 auto goes to 5
@@ -181,3 +182,36 @@ if task == 6:
 		vrange /=10
 	pdf.close()
 	del check_ful
+
+
+if task == 7:
+	sign = 1.0
+	cmap = 'Dark2'
+	import phase as psi
+	mask = 'sign'+str(int(sign))+'_log_'+cmap
+#plot phase LL minus RR
+	pdf = pgs.PdfPages(figure_path+'phase_LLminusRR_'+mask+'_'+str(filenumber)+'.pdf')
+		
+	# set a filter, only consider phasel+phaser(ideally = 0) < vrange
+	phasel = psi.readphase0(name = namel,mask_lowI=mask_lowI)
+	phaser = psi.readphase0(name = namer,mask_lowI=mask_lowI)
+	check = phasel - phaser
+	del phasel,phaser	
+	renorm = check>np.pi
+	check[renorm]-=2.0*np.pi
+	renorm = check<-np.pi
+	check[renorm]+=2.0*np.pi
+	del renorm
+
+	for i in xrange(0,filenumber):
+		filter_indices = sign*check >0	
+		print np.count_nonzero(filter_indices)
+		check[np.logical_not(filter_indices)]=0.0
+		del filter_indices
+
+		check = np.log10(abs(check))
+
+		name = namel.replace('pol_LL',mask)
+		psi.plot_phase(check,pdf,name=name,vrange = vrange,cmap = cmap)
+	pdf.close()
+	del check

@@ -46,7 +46,7 @@ def phase0_LminusR (phasel,phaser,save='no',name = 'gb057_1.input_baseline257_fr
 		print (saving_path+'phase_diff_mask'+str(mask_lowI)+'_'+name)
 	return phase_diff
 
-def plot_phase (phase,pdf,name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebint',vrange = np.pi ):
+def plot_phase (phase,pdf,name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebint',vrange = np.pi,cmap = 'seismic' ):
 	if vrange == 0:
 		print 'vrange = 0, auto set vrange = pi'
 		vrange = np.pi
@@ -66,7 +66,7 @@ def plot_phase (phase,pdf,name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebi
 #	phase[np.logical_not(mask_indices)] = -100	
 
 	plt.figure(1)
-	plt.imshow(phase, origin='lower',interpolation='none',aspect='auto',cmap='seismic')
+	plt.imshow(phase, origin='lower',interpolation='none',aspect='auto',cmap= cmap)
 	plt.xlim(300,1000)
 	plt.ylim(5000,12000)
 	plt.title(name)
