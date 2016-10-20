@@ -4,13 +4,18 @@ import matplotlib.pyplot as plt
 #saving paths
 saving_path = '/mnt/raid-cita/dzli/gb057/'
 
+def mask(conj,mask_lowI=0):
+	mask_indices = np.log10(np.absolute(conj)**2.)< mask_lowI
+	print 'number of unmasked points',np.count_nonzero(np.logical_not(mask_indices))
+	return mask_indices
+
+
 def phase0(name = 'gb057_1.input_baseline257_freq_00_pol_LL.rebint', save = 'no',mask_lowI=0.0):
 	import spec as sp
 	conj = sp.readconj(name=name)
 	phase = np.angle(conj)
 #apply mask
-	mask_indices = np.log10(np.absolute(conj)**2.)< mask_lowI
-	print 'number of unmasked points',np.count_nonzero(np.logical_not(mask_indices))
+	mask_indices = mask(conj,mask_lowI=mask_lowI)
 	phase[mask_indices] = 0.0
 
 	if save !='no':
@@ -32,7 +37,13 @@ def readphase0(name = 'gb057_1.input_baseline257_freq_00_pol_LL.rebint',phase_ty
 	return phase
 
 def phase0_LminusR (phasel,phaser,save='no',name = 'gb057_1.input_baseline257_freq_00_pol_LL.rebint',mask_lowI=0.0):
+	zerol = phasel == 0
+	zeror = phaser == 0
+	zero = zerol+zeror
+	del zerol,zeror
 	phase_diff = phasel - phaser
+	phase_diff[zero]=0
+	del zero
 
 #to make sure delta psi is in the range of -pi to pi
 	renorm = phase_diff > np.pi
@@ -75,3 +86,18 @@ def plot_phase (phase,pdf,name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebi
 	pdf.savefig(1)
 	plt.clf() # clear figure for next plot
 	return 		
+
+def mean_phase(name = 'gb057_1.input_baseline257_freq_00_pol_LL.rebint', mask_lowI=0.0,box =[400,600,9000,11000]):
+	import spec as sp
+	conj = sp.readconj(name = name)
+	mask_indices = mask(conj,mask_lowI=mask_lowI)
+	conj[mask_indices]=0.
+	print 'calculate E meanr, meani:'
+	meanr = sp.mean_spec(np.real(conj),box) 
+	meani = sp.mean_spec(np.imag(conj),box)
+	mean = meanr + meani*1.0j
+	angle = np.angle(mean)
+	print 'angle',angle
+	del conj,meani,meanr,mean
+	return angle 
+

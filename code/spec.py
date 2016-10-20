@@ -21,6 +21,7 @@
 #			Arguments:
 #					spec_type: 'dy', 'sec'; secondary spectra are plotted in log format
 #					pdf: a pointer pointing to the targeted pdf
+#		mean_spec(
 #
 # First version: Dongzi Li. 2016.10.15
 #===============================================================
@@ -65,13 +66,13 @@ def conj_spec(data,save = 'no',name =  'gb057_1.input_baseline257_freq_00_pol_LL
 		return
 
 #========================================================
-def plot_spec(data, pdf, spec_type = 'dy',name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebint'):
+def plot_spec(data, pdf, spec_type = 'dy',name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebint',cmap = 'Gray'):
 	if spec_type == 'dy':
 		plt.figure(1)
 		plt.imshow(data,origin='lower',interpolation='none',aspect='auto')
 	elif spec_type == 'sec':
 		plt.figure(1)
-		plt.imshow(np.log10(np.absolute(data)**2.), origin='lower',interpolation='none',aspect='auto',cmap='gray')
+		plt.imshow(np.log10(np.absolute(data)**2.), origin='lower',interpolation='none',aspect='auto',cmap= cmap)
 		plt.xlim(300,1000)
 		plt.ylim(5000,12000)
 		plt.title(name)
@@ -82,4 +83,14 @@ def plot_spec(data, pdf, spec_type = 'dy',name =  'gb057_1.input_baseline257_fre
 	pdf.savefig(1)
 	plt.clf() # clear figure for next plot
 	return 
+
+#================================================
+def mean_spec(data,box,cover='no'):
+	print 'start mean_spec' 
+	num_points = np.count_nonzero(data[box[2]:box[3]+1,box[0]:box[1]+1])
+	average = sum(data[box[2]:box[3]+1,box[0]:box[1]+1].reshape(-1,1))*1.0/num_points
+	if cover !='no':
+		data[box[2]:box[3]+1,box[0]:box[1]+1] = average
+	print 'number of points averaged: ', num_points, 'mean', average
+	return average
 
