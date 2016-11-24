@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 saving_path = '/mnt/raid-cita/dzli/gb057/'
 
 def mask(conj,mask_lowI=0):
-	mask_indices = np.log10(np.absolute(conj)**2.)< mask_lowI
+	mask_indices = np.log10(np.absolute(conj))< mask_lowI
 	print 'number of unmasked points',np.count_nonzero(np.logical_not(mask_indices))
 	return mask_indices
 
@@ -87,17 +87,27 @@ def plot_phase (phase,pdf,name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebi
 	plt.clf() # clear figure for next plot
 	return 		
 
-def mean_phase(name = 'gb057_1.input_baseline257_freq_00_pol_LL.rebint', mask_lowI=0.0,box =[400,600,9000,11000]):
+def mean_phase(name = 'gb057_1.input_baseline257_freq_00_pol_LL.rebint', mask_lowI=0.0,box =[400,600,9000,11000],bgnoise='no'):
 	import spec as sp
-	conj = sp.readconj(name = name)
+	conj = sp.readconj(name = name,cross='y')
 	mask_indices = mask(conj,mask_lowI=mask_lowI)
+	
+	if bgnoise != 'no':
+		noise = np.log10(np.abs(np.real(conj[mask_indices]))+1.).reshape(-1,1)
+		points = len(noise)
+		noise_r = sum(noise)*1.0/points
+		noise = np.log10(np.abs(np.imag(conj[mask_indices]))+1.).reshape(-1,1)
+		noise_i = sum(noise)*1.0/points
+		del noise
+		print '%i noise ave(log10): real %.1f , imag %.1f \n' %(points,noise_r,noise_i)
+
 	conj[mask_indices]=0.
 	print 'calculate E meanr, meani:'
-	meanr = sp.mean_spec(np.real(conj),box) 
-	meani = sp.mean_spec(np.imag(conj),box)
+	meanr,num_points = sp.mean_spec(np.real(conj),box) 
+	meani,num_points = sp.mean_spec(np.imag(conj),box)
 	mean = meanr + meani*1.0j
 	angle = np.angle(mean)
 	print 'angle',angle
 	del conj,meani,meanr,mean
-	return angle 
+	return angle,num_points
 
