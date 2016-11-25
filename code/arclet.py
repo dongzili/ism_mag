@@ -101,31 +101,21 @@ def read_data(dir,num_columns,num_rows,filer,filei):
     return I
 
 def get_mask(num_rows,num_columns,doppler,delay,doppler1,doppler2,delay1,delay2):
+	print doppler1,doppler2,delay1,delay2
 	mask = np.zeros((int(num_rows),int(num_columns)))
-	delay_max = mask.shape[0]/2 + 2500 #np.int(5.6*mask.shape[0]/10 )
-	delay_min = mask.shape[0]/2 #np.argmin(np.absolute(delay-0.0999))#16384/2 +559 #cut of at a delay of 0.07 ms                      
-	delay_min = 0
-	delay_max = mask.shape[0]/2
+	delay_max = mask.shape[0]//2 + 2500 #np.int(5.6*mask.shape[0]/10 )
+	delay_min = mask.shape[0]//2 #np.argmin(np.absolute(delay-0.0999))#16384/2 +559 #cut of at a delay of 0.07 ms                      
 	doppler_min = 0 #mask.shape[1]/2 
-	doppler_max = mask.shape[1]
+	doppler_max = mask.shape[1]//2
 
-	#delay1 = 0.175
-	#doppler1 = 21.2
-	#delay2 = 0.180
-	#doppler2 = doppler1
 
 	mask[delay_min:delay_max,doppler_min:doppler_max]=1.
-	count = 0
 	for i in range(mask.shape[1]):
-		delayl=parabola(doppler[i],doppler1,delay1)
-		delayu=parabola(doppler[i],doppler2,delay2)
-		if delayl>delayu:
-			count=count+1
-			
-		mask[:,i] = np.where(delay>delayu, 0, mask[:,i])
+		delayh=parabola(doppler[i],doppler1,delay1)
+		delayl=parabola(doppler[i],doppler2,delay2)
+		mask[:,i] = np.where(delay>delayh, 0, mask[:,i])
 		mask[:,i] = np.where(delay<delayl, 0, mask[:,i])
 
-	print count
 	return mask
 
 def wiener_deconvolution1(y,H):

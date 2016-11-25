@@ -30,8 +30,8 @@ import matplotlib.pyplot as plt
 
 #rebin spectrum
 def rebin(a, shape):
-    sh = shape[0],a.shape[0]//shape[0],shape[1],a.shape[1]//shape[1]
-	    return a.reshape(sh).mean(-1).mean(1)
+	sh = shape[0],a.shape[0]//shape[0],shape[1],a.shape[1]//shape[1]
+	return a.reshape(sh).mean(-1).mean(1)
 
 def readdy(name = 'gb057_1.input_baseline257_freq_00_pol_LL.rebint'):
 
@@ -95,18 +95,30 @@ def cross_sec(namel,namer,save = 'no',outname=''):
 		crosssec = None
 	return crosssec
 #========================================================
-def plot_spec(data, pdf, spec_type = 'dy',name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebint',cmap = 'Greys',show = 'plot',tbox=5.7,nubox=800.):
+def plot_spec(data, pdf, spec_type = 'dy',name =  'gb057_1.input_baseline257_freq_00_pol_LL.rebint',cmap = 'Greys',show = 'plot',tbox=5.7,nubox=8000.,bins=1):
 	print tbox,nubox
-	fd_drift = np.floor(len(data[0])/2.)*1./tbox
-	tau_drift = np.floor(len(data)/2.)*1./nubox
-	exten = [-fd_drift,fd_drift-len(data[0])%2/tbox,-tau_drift,tau_drift-len(data)%2/nubox]
-	print exten
 	print 'spec_type', spec_type
 	fig=plt.figure(1)
 	if spec_type == 'dy':
-		plt.imshow(data,origin='lower',interpolation='none',aspect='auto',extent=exten)
+		fig=plt.figure(1)
+		plt.imshow(data,origin='lower',interpolation='none',aspect='auto')
 	else:
-		dpix,dpiy = [700.,5000]
+		# x: fs; y:tau
+		dpix,dpiy = [300.,5000]
+		cenx,ceny = [len(data[0])//2,len(data)//2]
+		exten = [cenx-dpix,cenx+dpix,ceny,ceny+dpiy]
+		data=data[exten[2]:exten[3],exten[0]:exten[1]]
+		rebin_dpix,rebin_dpiy=[dpix,dpiy//bins]
+		print data.shape
+		print rebin_dpiy,rebin_dpix
+		if bins!=1:
+			data = rebin(data,(rebin_dpiy*2,rebin_dpix))
+#		exten = [(exten[0]-cenx)/tbox,(exten[1]-cenx)/tbox,0,(ceny-exten[2])/nubox] 
+		exten = [-dpix/tbox,(dpix-1)/tbox,0,(dpiy-1)/nubox] 
+		print exten
+		dpi = 100
+		fig=plt.figure(1,figsize=(rebin_dpix*2/dpi,rebin_dpiy/dpi),dpi=dpi)
+
 		
 		if spec_type == 'sec':
 			plt.imshow(np.log10(np.absolute(data)**2.), origin='lower',interpolation='none',aspect='auto',cmap= cmap,extent=exten)
@@ -116,10 +128,8 @@ def plot_spec(data, pdf, spec_type = 'dy',name =  'gb057_1.input_baseline257_fre
 		elif spec_type == 'phase':
 			plt.imshow(np.sign(data)*abs(data)**0.5,origin='lower',interpolation='none',aspect='auto',cmap= 'Dark2',extent=exten)
 
-		plt.xlim(-dpix/2/tbox,dpix/2/tbox)
-		plt.ylim(0,dpiy/nubox)
-#		plt.xlim(-40,0)
-#		plt.ylim(0,1)
+#		plt.xlim(-50,0)
+#		plt.ylim(0,0.5)
 
 	plt.colorbar()
 	plt.title(name)
@@ -135,8 +145,8 @@ def plot_spec(data, pdf, spec_type = 'dy',name =  'gb057_1.input_baseline257_fre
 	#	plt.show()
 	else:
 	#	plt.savefig(spec_type+name+'.pdf')
-		dpi = 100
-		pdf.savefig(1,figsize=(dpix/dpi,dpiy/dpi),dpi=dpi)
+		pdf.savefig(1,figsize=(rebin_dpix*2/dpi,rebin_dpiy/dpi),dpi=dpi)
+		print fig.get_size_inches()
 #		plt.clf() # clear figure for next plot
 	return 
 #=============================================
