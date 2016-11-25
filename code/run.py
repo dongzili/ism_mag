@@ -1,4 +1,4 @@
-task = 10
+task = 11
 plotphase=0
 mask_lowI = 6.7
 vrange = 0.0
@@ -10,6 +10,7 @@ lenx=1321 #time
 leny=16384 #freq
 tbox=6.729 # e^3 s (from .time)
 nubox=8000. #kHz
+f0=322.5
 # 0 plot secondary specs from dy_spec 
 # 1 save conj_spec data
 # 2 plot secondary specs from conj_spec
@@ -56,30 +57,17 @@ if task == 2:
 	cmap = 'Greys'
 	namell = namel
 	for j in xrange(0,1):
-		figurename = 'arclet_cut_dana.pdf'
+		figurename = 'arclet_cut_siqi.pdf'
 		pdf = pgs.PdfPages(figure_path+figurename)
 		for i in xrange(0,filenumber):
 			name = namell.replace('freq_00','freq_0'+str(i))
 			ic = sp.readconj(name=name)
-			sp.plot_spec(ic,pdf,spec_type='sec',name=name, cmap = cmap,show= 'save')#,tbox=tbox)
+			sp.plot_spec(ic,pdf,spec_type='sec',name=name, cmap = cmap,show= 'save',tbox=tbox)
 			para=2
-			if para == 1:	
-				doppler =(-np.arange(lenx/2.))/tbox			
-				doppler1,doppler2,delay1,delay2 = [-6.0,-6.0,0.116,0.088] 
-				sp.plot_parabola(doppler,doppler1,delay1,pdf)
-				sp.plot_parabola(doppler,doppler2,delay2,pdf)
-				doppler1,doppler2,delay1,delay2 = [-11.3,-11.3,0.4,0.37] 
-				sp.plot_parabola(doppler,doppler1,delay1,pdf)
-				sp.plot_parabola(doppler,doppler2,delay2,pdf)
-				doppler1,doppler2,delay1,delay2 = [-10.1,-10.1,0.3,0.27] 
-				sp.plot_parabola(doppler,doppler1,delay1,pdf)
-				sp.plot_parabola(doppler,doppler2,delay2,pdf)
-				doppler1,doppler2,delay1,delay2 = [-8.2,-8.0,0.2,0.16] 
-				sp.plot_parabola(doppler,doppler1,delay1,pdf)
-				sp.plot_parabola(doppler,doppler2,delay2,pdf)
 			if para == 2:
 				doppler =(-np.arange(lenx/2.))/tbox			
-				doppler1,doppler2,delay1,delay2 = [-20.52,-20.52,0.148,0.138] 
+				f = 314.5
+				doppler1,doppler2,delay1,delay2 = [-16.8*f/f0,-16.8*f/f0,0.146,0.136] 
 				sp.plot_parabola(doppler,doppler1,delay1,pdf)
 				sp.plot_parabola(doppler,doppler2,delay2,pdf)
 			#plt.show()
@@ -261,7 +249,8 @@ if task == 10:
 		for i in xrange(0,filenumber):
 			delay = (np.arange(leny)-np.floor(leny/2.))/nubox
 			doppler =(np.arange(lenx)-np.floor(lenx/2.))/tbox			
-			doppler1,doppler2,delay1,delay2 = [-20./1.18,-20./1.18,0.148,0.138] 
+			f = 314.5
+			doppler1,doppler2,delay1,delay2 = [-16.8*f/f0,-16.8*f/f0,0.146,0.136] 
 			print 'get mask'
 			mask = arc.get_mask(leny,lenx,doppler,delay,doppler1,doppler2,delay1,delay2)
 			print 'non zeron mask: ',np.count_nonzero(mask)
@@ -283,12 +272,12 @@ if task == 10:
 			doppleri = np.argmin(abs(doppler-np.average([doppler1,doppler2])))
 			icd = np.roll(np.roll(icd,doppleri - len(doppler)/2,1),delayi-len(delay)/2,0)
 			del dy,dyarc
-			sp.save_conj(icd,'wiener_recon_fd-20_'+name)
+			sp.save_conj(icd,'wiener_recon_fd-17_'+name)
 		namell = namell.replace('LL','RR')
 	task+=1
 #go11
 if task == 11:
-	name = 'wiener_recon_fd-20_' 
+	name = 'wiener_recon_fd-17_' 
 	icd = sp.readconj(name=name+namel)
 	pdf = pgs.PdfPages(figure_path+name+'LL.pdf')
 	sp.plot_spec(icd,pdf,spec_type='sec',name=name, tbox=tbox,nubox=nubox,show='save',bins=1,cmap = 'Dark2')
@@ -309,3 +298,8 @@ if task == 12:
 	sp.plot_spec(np.imag(cc),pdf,spec_type='phase',name=content+name, tbox=tbox,nubox=nubox,show='save')
 	del cc
 	pdf.close()
+
+#go13
+if task == 13:
+	import slowft as ft
+	ft.main()

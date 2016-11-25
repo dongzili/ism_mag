@@ -160,6 +160,8 @@ def plot_parabola(x,x0,y0,pdf):
 	x=x[posi]
 	y=y[posi]
 	plt.plot(x,y)
+	plt.xlim(-50,0)
+	plt.ylim(0,0.5)
 #	pdf.savefig(1)
 #	plt.show()
 	return 

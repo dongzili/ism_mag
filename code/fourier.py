@@ -32,7 +32,6 @@ def convolved_conjugate_spectrum(Ic,doppler,delay,f0):
     doppler_min = 0 #int(660/2 - 206*(f0/314.5))
     doppler_max = Ic.shape[1]/2 #int(660/2 - 41*(f0/314.5))
    
-   #define the thickness of the arclet
     delay1 = 0.148
     doppler1 = -20.52*(f0/338.5)
     #doppler1 = (-20.35-doppler_resolution*1.0)*f0/338.5
@@ -40,11 +39,10 @@ def convolved_conjugate_spectrum(Ic,doppler,delay,f0):
     doppler2 = doppler1
 
     I = ifft2(ifftshift(Ic))
-#shift axis back to 0,0?
+
     delayi = np.argmin(abs(delay-np.average([delay1,delay2])))
     doppleri = np.argmin(abs(doppler-np.average([doppler1,doppler2])))
 
-#mask other points besides the moon shape thing
     mask = np.zeros(Ic.shape)
     mask[delay_min:delay_max,doppler_min:doppler_max]=1.0
     for i in range(doppler_min,doppler_max):
@@ -94,13 +92,10 @@ def read_data(dir,num_columns,num_rows,filer,filei):
     return I
 
 def get_mask(num_rows,num_columns,doppler,delay,doppler1,doppler2,delay1,delay2):
-	rows = int(num_rows)
-	columns=int(columns)
-    mask = np.zeros((rows,columns))
+    mask = np.zeros((num_rows,num_columns))
+    
     delay_max = mask.shape[0]/2 + 2500 #np.int(5.6*mask.shape[0]/10 )
     delay_min = mask.shape[0]/2 #np.argmin(np.absolute(delay-0.0999))#16384/2 +559 #cut of at a delay of 0.07 ms                      
-	delay_min = 0
-	delay_max = mask.shape[0]
     doppler_min = 0 #mask.shape[1]/2 
     doppler_max = mask.shape[1]
 
@@ -109,24 +104,20 @@ def get_mask(num_rows,num_columns,doppler,delay,doppler1,doppler2,delay1,delay2)
     #delay2 = 0.180
     #doppler2 = doppler1
 
+    delayi = np.argmin(abs(delay-np.average([delay1,delay2])))
+    doppleri = np.argmin(abs(doppler-np.average([doppler1,doppler2])))
+
+
     mask[delay_min:delay_max,doppler_min:doppler_max]=1.
-	count = 0
     for i in range(mask.shape[1]):
         delayl=parabola(doppler[i],doppler1,delay1)
         delayu=parabola(doppler[i],doppler2,delay2)
-		if i == mask.shape[1]/2-10
-			print doppler[i],delayl,delayu
-		if delayl>delayu:
-			count++
-			
         mask[:,i] = np.where(delay>delayu, 0, mask[:,i])
         mask[:,i] = np.where(delay<delayl, 0, mask[:,i])
     
-	print count
     return mask
 
-#input variable, np.real(I), Ic*mask2
-def wiener_deconvolution1(y,H):
+def wiener_deconvolution(y,H):
     signal = np.absolute(y-np.mean(y))+np.absolute(1./H-np.mean(1./H))
     noise = 2.*np.average(np.absolute(y-np.mean(y)))
     F = np.absolute(H)/np.conjugate(H)
@@ -135,11 +126,3 @@ def wiener_deconvolution1(y,H):
     #Ic = np.roll(np.roll(Ic,doppleri-len(doppler)/2,1),delayi-len(delay)/2,0)
     return Ic
 
-def wiener_deconvolution(y,H):
-   signal = np.absolute(y-np.mean(y))
-   noise = np.average(signal)
-   F = np.absolute(H)/np.conjugate(H)
-   W = np.absolute(F)**2./(np.absolute(F)**2.+noise/signal)
-   Ic = fftshift(fft2(y/F*W))
-   Ic = np.roll(np.roll(Ic,doppleri-len(doppler)/2,1),delayi-len(delay)/2,0)
-   return Ic

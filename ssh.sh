@@ -1,1 +1,2 @@
-ssh -X -Y dzli@peccary
+#ssh -X -Y dzli@gw.cita.utoronto.ca
+ssh -X -Y dzli@prawn
