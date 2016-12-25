@@ -6,6 +6,6 @@ git add *.sh
 git add code/*.py
 git rm code/._*.pdf
 #git rm --cached file1.txt
-git commit -m "12.4 start toeplitz"
-git remote add 12.4 https://github.com/fleaf5/ism_mag.git
-git push -u 12.4 master
+git commit -m "12.26 fit"
+git remote add 12.26 https://github.com/fleaf5/ism_mag.git
+git push -u 12.26 master
